@@ -1,4 +1,4 @@
-# game_env.py
+# game_env.py (HARİTA YOK - SADECE SAVAŞ VE LEVEL UP)
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
@@ -6,7 +6,6 @@ import mss
 import pyautogui
 import time
 import cv2
-import os
 import datetime
 import threading
 
@@ -19,12 +18,20 @@ from config import (
 
 from get_infos import InfoExtractor
 
+# --- İTEM ÖNCELİK LİSTESİ ---
+PRIORITY_LIST = [
+    "katana",  # En iyi silah
+    "dexecutioner",
+    "frostwalker",
+    "chaos_tome",
+    "precision_tome",
+    "xp_tome",
+    "cursed_tome",
+]
+# ----------------------------
+
 
 class ScreenMonitor(threading.Thread):
-    """
-    Arka planda sürekli ekranı izleyen ve durumu güncelleyen Thread.
-    """
-
     def __init__(self, game_region):
         super().__init__()
         self.game_region = game_region
@@ -47,6 +54,7 @@ class ScreenMonitor(threading.Thread):
                     state = self.extractor.extract_game_state(raw_obs)
                     self.latest_game_state = state
                     self.latest_raw_obs = raw_obs
+                    time.sleep(0.01)
                 except Exception as e:
                     print(f"Monitor Hatasi: {e}")
 
@@ -76,23 +84,21 @@ class GameEnv(gym.Env):
         self.render_window_name = "AI Bot Log Penceresi"
         self.current_action_str = "NOP"
         self.last_hp = 100.0
-
-        # --- YENİ: Level Sayacı ---
         self.current_level = 1
-        # --------------------------
-
         self.on_levelup_screen = False
+
         self.last_reward = 0.0
         self.last_game_state = self.monitor.latest_game_state
         self.window_initialized = False
         self.LOG_BOX_WIDTH = 400
         self.LOG_BOX_HEIGHT = 250
         self.screen_width, self.screen_height = pyautogui.size()
+
         cv2.namedWindow(self.render_window_name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(
             self.render_window_name, self.LOG_BOX_WIDTH, self.LOG_BOX_HEIGHT
         )
-        self.current_movement_key = None
+
         self.is_resetting = False
         self.pressed_movement_keys = set()
 
@@ -105,8 +111,10 @@ class GameEnv(gym.Env):
     def _calculate_reward(self, new_game_state):
         reward = -0.01
         current_hp = new_game_state["current_hp"]
+
         if current_hp == -1.0:
             current_hp = self.last_hp
+
         if current_hp < self.last_hp:
             reward -= 50
         elif current_hp > self.last_hp:
@@ -115,21 +123,17 @@ class GameEnv(gym.Env):
 
         is_level_up = new_game_state["is_level_up"]
 
-        # --- YENİ: Level Artırma Mantığı ---
         if is_level_up and not self.on_levelup_screen:
             reward += 200
-            self.current_level += 1  # Leveli artır
+            self.current_level += 1
             self.on_levelup_screen = True
         elif not is_level_up:
             self.on_levelup_screen = False
-        # -----------------------------------
 
         return reward
 
     def _get_terminated(self, new_game_state):
         if new_game_state["is_game_over"]:
-            return True
-        if self.last_hp < 1:
             return True
         return False
 
@@ -139,7 +143,7 @@ class GameEnv(gym.Env):
                 for key in self.pressed_movement_keys:
                     pyautogui.keyUp(key)
                 self.pressed_movement_keys.clear()
-        except Exception:
+        except:
             pass
 
     def _wait_and_check(self, duration):
@@ -150,13 +154,42 @@ class GameEnv(gym.Env):
             time.sleep(0.005)
         return False
 
-    def step(self, action):
-        self.last_game_state = self.monitor.latest_game_state
-        is_game_over_now = self.last_game_state.get("is_game_over", False)
+    def _choose_best_levelup_action(self):
+        """Level Up ekranında en iyi seçeneği belirler."""
+        raw_obs = self.monitor.latest_raw_obs
+        if raw_obs is None:
+            return 7
 
+        found_items = self.monitor.extractor.scan_levelup_screen(raw_obs)
+
+        best_slot_index = 0
+        best_priority_idx = 999
+
+        for i, item_name in enumerate(found_items):
+            if item_name in PRIORITY_LIST:
+                p_idx = PRIORITY_LIST.index(item_name)
+                if p_idx < best_priority_idx:
+                    best_priority_idx = p_idx
+                    best_slot_index = i
+
+        return 7 + best_slot_index
+
+    def step(self, action):
+        # --- HARİTA KODU KALDIRILDI ---
+
+        self.last_game_state = self.monitor.latest_game_state
+        is_level_up_visible = self.last_game_state.get("is_level_up", False)
+
+        # AKILLI LEVEL UP MANTIĞI
+        if is_level_up_visible:
+            forced_action = self._choose_best_levelup_action()
+            action = forced_action
+            self.current_action_str = f"AUTO-PICK: {ACTION_MAP[action]}"
+            self._release_all_movement_keys()
+
+        # OYUN AKIŞI
         if self.is_resetting:
-            if not is_game_over_now:
-                print("Reset bitti.")
+            if not self.last_game_state.get("is_game_over", False):
                 try:
                     pyautogui.keyUp("r")
                 except:
@@ -172,36 +205,30 @@ class GameEnv(gym.Env):
         )
 
         command_type, command_value = ACTION_MAP[action]
-        action_str_for_render = str(ACTION_MAP[action])
+
+        if not is_level_up_visible:
+            self.current_action_str = str(ACTION_MAP[action])
 
         movement_actions = [0, 1, 2, 3, 4, 5]
         upgrade_actions = [7, 8, 9, 10, 11, 12]
         interaction_action = 6
-
-        is_level_up_visible = self.last_game_state.get("is_level_up", False)
         is_invalid_action = False
 
         if is_level_up_visible:
             if action in movement_actions or action == interaction_action:
                 command_type = "nop"
-                action_str_for_render = "(GECERSIZ-LvlUp)"
                 is_invalid_action = True
-                self._release_all_movement_keys()
         else:
             if action in upgrade_actions or action == interaction_action:
                 command_type = "nop"
-                action_str_for_render = "(GECERSIZ-Savas)"
                 is_invalid_action = True
 
         if not is_game_active:
-            action_str_for_render = "Oyun Pasif"
+            self.current_action_str = "Oyun Pasif"
             command_type = "nop"
 
-        self.current_action_str = action_str_for_render
-        is_movement_action = action >= 0 and action <= 5
-
         if is_game_active:
-            if is_movement_action:
+            if action in movement_actions:
                 try:
                     pyautogui.keyDown(command_value)
                     self.pressed_movement_keys.add(command_value)
@@ -223,7 +250,6 @@ class GameEnv(gym.Env):
                         pass
 
         was_interrupted = self._wait_and_check(0.1)
-
         if was_interrupted:
             self._release_all_movement_keys()
             self.last_game_state = self.monitor.latest_game_state
@@ -237,11 +263,7 @@ class GameEnv(gym.Env):
         if terminated:
             self._release_all_movement_keys()
 
-        truncated = False
-        info = {}
-        new_vector = self._create_observation_vector()
-
-        return new_vector, reward, terminated, truncated, info
+        return self._create_observation_vector(), reward, terminated, False, {}
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -255,50 +277,36 @@ class GameEnv(gym.Env):
         except:
             pass
 
-        self.current_movement_key = None
-
-        # --- YENİ: Resetlenince Level'i 1 yap ---
         self.current_level = 1
-        # ----------------------------------------
-
         self.last_game_state = self.monitor.latest_game_state
         self.last_hp = self.last_game_state.get("current_hp", 100.0)
+
         if self.last_hp < 1:
             self.last_hp = 100.0
-        self.on_levelup_screen = False
 
+        self.on_levelup_screen = False
         return self._create_observation_vector(), {}
 
     def render(self):
-        raw_obs = self.monitor.latest_raw_obs
-        if raw_obs is None:
-            display_img = np.zeros(
-                (self.LOG_BOX_HEIGHT, self.LOG_BOX_WIDTH, 3), dtype=np.uint8
-            )
-        else:
-            display_img = np.zeros(
-                (self.LOG_BOX_HEIGHT, self.LOG_BOX_WIDTH, 3), dtype=np.uint8
-            )
+        display_img = np.zeros(
+            (self.LOG_BOX_HEIGHT, self.LOG_BOX_WIDTH, 3), dtype=np.uint8
+        )
+        now = datetime.datetime.now().strftime("%H:%M:%S")
 
-        now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
-
-        # --- YENİ: Level Bilgisini Logla ---
         logs = [
             f"ZAMAN: {now}",
             f"EYLEM: {self.current_action_str}",
             f"ODUL: {self.last_reward:.1f}",
-            f"HP: {self.last_hp:.1f}%",
-            f"LEVEL: {self.current_level}",  # <-- EKLENDİ
-            f"LvlUp Ekrani: {self.last_game_state.get('is_level_up', False)}",
-            f"GameOver Ekrani: {self.last_game_state.get('is_game_over', False)}",
+            f"HP: {self.last_hp:.1f}% | LVL: {self.current_level}",
+            f"LVL: {self.last_game_state.get('is_level_up', False)}",
+            f"OYUN: {self.last_game_state.get('is_game_over', False)}",
         ]
-        # -----------------------------------
 
         for i, line in enumerate(logs):
             cv2.putText(
                 display_img,
                 line,
-                (10, 25 + (i * 25)),
+                (10, 30 + (i * 30)),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 (0, 255, 0),
@@ -312,7 +320,7 @@ class GameEnv(gym.Env):
                 cv2.moveWindow(
                     self.render_window_name,
                     self.screen_width - 420,
-                    self.screen_height - 320,
+                    self.screen_height - 350,
                 )
                 cv2.setWindowProperty(self.render_window_name, cv2.WND_PROP_TOPMOST, 1)
                 self.window_initialized = True

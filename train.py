@@ -43,7 +43,6 @@ def start_training():
             tensorboard_log="./ppo_tensorboard_logs/",
             device="cuda" if torch.cuda.is_available() else "cpu",
         )
-        # ---
 
     render_callback = RenderCallback(render_freq=5)
 

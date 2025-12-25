@@ -1,170 +1,224 @@
 import cv2
 import numpy as np
 import os
+import glob  # <-- Klasör taramak için eklendi
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # --- SİZİN DÜZENLEMENİZ GEREKEN AYARLAR ---
-# 1. Sağlık Çubuğu Bölgesi (x, y, w, h)
-HP_SEARCH_REGION = (27, 162, 331, 1)
+# 1. Sağlık Çubuğu Bölgesi
+HP_SEARCH_REGION = (27, 140, 331, 100)
 
-# 2. Sağlık Çubuğu Rengi (HSV formatında)
-HP_COLOR_LOW = np.array([0, 120, 70])
+# 2. Renk Ayarları
+HP_COLOR_LOW = np.array([0, 50, 50])  # Kırmızı (Can)
 HP_COLOR_HIGH = np.array([10, 255, 255])
 
-# 3. HP Barının minimum genişliği (piksel olarak)
-MIN_HP_BAR_WIDTH = 1
-
-# 4. OKUMA DİLİMİ
-HP_SLICE_OFFSET_Y = 2
-HP_SLICE_HEIGHT = 5
+BLUE_COLOR_LOW = np.array([100, 150, 50])  # Mavi (Mana/Kalkan)
+BLUE_COLOR_HIGH = np.array([140, 255, 255])
 
 # --- BÖLGESEL ARAMA AYARLARI ---
 LEVELUP_REGION = (823, 313, 373, 50)
 GAMEOVER_REGION = (1123, 176, 310, 94)
 
-# "time": current_time
-GAMEPLAYTIME_REGION = (69, 52, 168, 64)
-# "gold": current_gold
-GOLD_REGION = (497, 57, 172, 51)
-# "kills": current_kills
-KILLSCORE_REGION = (711, 57, 242, 51)
-# "current_box_cost": current_box_cost
-BOXPRICE_REGION = (2145, 61, 219, 51)
-# "level": current_level
-LEVEL_REGION = (2318, 57, 210, 63)
-# "current_guns": current_guns
-GUNS_REGION = (23, 179, 351, 87)
-# "current_tomes": current_tomes
-TOMES_REGION = (23, 270, 351, 87)
-# "map": map_data
-MAP_KEY = "TAB"
-MAP_REGION = (0, 319, 1089, 1096)
-# ---
+# SİZİN BULDUĞUNUZ KOORDİNATLAR
+LEVELUP_OPTIONS = [
+    (885, 490, 140, 140),  # 1. Seçenek
+    (900, 720, 135, 130),  # 2. Seçenek
+    (900, 945, 135, 135),  # 3. Seçenek
+]
 
-# 3. Şablon Eşleştirme Eşiği
+# Şablon Eşleştirme Eşiği
 TEMPLATE_THRESHOLD = 0.6
 
 
 class InfoExtractor:
     def __init__(self):
+        # 1. Normal Şablonları Yükle
         levelup_path = os.path.join(SCRIPT_DIR, "assets/levelup_template.png")
         gameover_path = os.path.join(SCRIPT_DIR, "assets/gameover_template.png")
 
         self.levelup_template = self._load_template(levelup_path)
         self.gameover_template = self._load_template(gameover_path)
 
+        # 2. İTEM ŞABLONLARINI YÜKLE (Maskeli Yükleme)
+        self.item_templates = {}
+        items_dir = os.path.join(SCRIPT_DIR, "assets/good_items")
+
+        # Klasördeki tüm PNG'leri bul
+        for file_path in glob.glob(os.path.join(items_dir, "*.png")):
+            filename = os.path.basename(file_path)
+            item_name = os.path.splitext(filename)[0]  # "katana.png" -> "katana"
+
+            # Şeffaflık (Alpha) kanalıyla birlikte yükle
+            img_bgra = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
+
+            if img_bgra is not None:
+                # Eğer resim 4 kanallıysa (Şeffaflık varsa) maske oluştur
+                if img_bgra.shape[2] == 4:
+                    bgr = img_bgra[:, :, :3]
+                    mask = img_bgra[:, :, 3]  # Alpha kanalı
+                    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+
+                    self.item_templates[item_name] = {"img": gray, "mask": mask}
+                    print(f"İtem Yüklendi (Maskeli): {item_name}")
+                else:
+                    # Maske yoksa düz yükle
+                    gray = cv2.cvtColor(img_bgra, cv2.COLOR_BGR2GRAY)
+                    self.item_templates[item_name] = {"img": gray, "mask": None}
+                    print(f"İtem Yüklendi (Normal): {item_name}")
+            else:
+                print(f"UYARI: {filename} okunamadı!")
+
     def _load_template(self, path):
         template = cv2.imread(path, 0)
         if template is None:
-            print(f"UYARI (InfoExtractor): '{path}' şablonu bulunamadı veya okunamadı.")
+            print(f"UYARI (InfoExtractor): '{path}' şablonu bulunamadı.")
         return template
 
     def _check_template(self, gray_image_region, template):
         if template is None:
             return False
         try:
-            if (
-                template.shape[0] > gray_image_region.shape[0]
-                or template.shape[1] > gray_image_region.shape[1]
-            ):
-                return False
-        except Exception:
-            return False
-
-        try:
             res = cv2.matchTemplate(gray_image_region, template, cv2.TM_CCOEFF_NORMED)
-            _minVal, maxVal, _minLoc, _maxLoc = cv2.minMaxLoc(res)
-
-            if maxVal >= TEMPLATE_THRESHOLD:
-                return True
-        except cv2.error:
+            _, maxVal, _, _ = cv2.minMaxLoc(res)
+            return maxVal >= TEMPLATE_THRESHOLD
+        except:
             return False
-
-        return False
 
     def _get_current_hp(self, raw_bgr_image):
         try:
             x_s, y_s, w_s, h_s = HP_SEARCH_REGION
-            search_crop = raw_bgr_image[y_s : y_s + h_s, x_s : x_s + w_s]
 
-            hsv_crop = cv2.cvtColor(search_crop, cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv_crop, HP_COLOR_LOW, HP_COLOR_HIGH)
+            # --- KULLANICI AYARLARI ---
+            STANDARD_OFFSET = 1
+            BLUE_SHIFT = 37
+            SLICE_HEIGHT = 3
+            # --------------------------
 
-            bar_y = -1
-            for y in range(h_s):
-                row = mask[y, :]
-                red_pixel_count = cv2.countNonZero(row)
+            # 1. ADIM: Standart konumu kontrol et (Mavi var mı?)
+            check_y = y_s + STANDARD_OFFSET
 
-                if red_pixel_count > MIN_HP_BAR_WIDTH:
-                    bar_y = y
-                    break
-
-            if bar_y == -1:
+            if check_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
                 return -1.0
 
-            slice_y_start = bar_y + HP_SLICE_OFFSET_Y
-            slice_y_end = slice_y_start + HP_SLICE_HEIGHT
+            check_slice = raw_bgr_image[
+                check_y : check_y + SLICE_HEIGHT, x_s : x_s + w_s
+            ]
+            hsv_check = cv2.cvtColor(check_slice, cv2.COLOR_BGR2HSV)
 
-            bar_full_slice_bgr = search_crop[slice_y_start:slice_y_end, :]
+            mask_blue = cv2.inRange(hsv_check, BLUE_COLOR_LOW, BLUE_COLOR_HIGH)
+            blue_ratio = cv2.countNonZero(mask_blue) / (w_s * SLICE_HEIGHT)
 
-            bar_slice_hsv = cv2.cvtColor(bar_full_slice_bgr, cv2.COLOR_BGR2HSV)
-            hp_mask = cv2.inRange(bar_slice_hsv, HP_COLOR_LOW, HP_COLOR_HIGH)
-            hp_pixels = cv2.countNonZero(hp_mask)
+            # 2. ADIM: Ofseti Belirle
+            current_offset = STANDARD_OFFSET
 
-            total_pixels_in_slice = (
-                bar_full_slice_bgr.shape[0] * bar_full_slice_bgr.shape[1]
-            )
+            # Eğer şeridin %40'ından fazlası maviyse, bar kaymıştır.
+            if blue_ratio > 0.40:
+                current_offset = STANDARD_OFFSET + BLUE_SHIFT
 
-            if total_pixels_in_slice == 0:
+            # 3. ADIM: Kırmızı Canı Oku
+            read_y = y_s + current_offset
+
+            if read_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
                 return 0.0
 
-            EMPTY_BAR_LOW = np.array([0, 0, 20])
-            EMPTY_BAR_HIGH = np.array([180, 50, 80])
+            read_slice = raw_bgr_image[read_y : read_y + SLICE_HEIGHT, x_s : x_s + w_s]
+            hsv_read = cv2.cvtColor(read_slice, cv2.COLOR_BGR2HSV)
 
-            empty_mask = cv2.inRange(bar_slice_hsv, EMPTY_BAR_LOW, EMPTY_BAR_HIGH)
-            empty_pixels = cv2.countNonZero(empty_mask)
+            mask_red = cv2.inRange(hsv_read, HP_COLOR_LOW, HP_COLOR_HIGH)
+            white_pixels = cv2.countNonZero(mask_red)
+            total_area = w_s * SLICE_HEIGHT
 
-            total_bar_pixels = hp_pixels + empty_pixels
-
-            if total_bar_pixels < hp_pixels:
-                total_bar_pixels = total_pixels_in_slice
-
-            if total_bar_pixels == 0:
+            if total_area == 0:
                 return 0.0
 
-            hp_percentage = (hp_pixels / total_bar_pixels) * 100
+            hp_percentage = (white_pixels / total_area) * 100
 
-            return hp_percentage
+            # Gürültü filtresi
+            return hp_percentage if hp_percentage > 2 else 0.0
 
-        except Exception as e:
+        except Exception:
             return -1.0
 
+    # --- YENİ: LEVEL UP EKRANINI TARA ---
+    def scan_levelup_screen(self, raw_bgr_image):
+        """
+        Level Up ekranındaki 3 kutuyu tarar.
+        Dönüş Örneği: ['katana', None, 'xp_tome'] (None = Tanınmayan item)
+        """
+        gray_screen = cv2.cvtColor(raw_bgr_image, cv2.COLOR_BGR2GRAY)
+        results = []
+
+        # Her bir kutu için (Koordinatları LEVELUP_OPTIONS'dan al)
+        for i, (x, y, w, h) in enumerate(LEVELUP_OPTIONS):
+            # Güvenlik: Resim sınırlarını aşma
+            if y + h > gray_screen.shape[0] or x + w > gray_screen.shape[1]:
+                results.append(None)
+                continue
+
+            # Kutuyu Kes
+            slot_crop = gray_screen[y : y + h, x : x + w]
+
+            found_item_name = None
+            best_score = 0.0
+
+            # Bu kutuda bildiğimiz itemlerden biri var mı?
+            for name, data in self.item_templates.items():
+                template = data["img"]
+                mask = data["mask"]
+
+                try:
+                    # Şablon kutudan büyükse atla
+                    if (
+                        template.shape[0] > slot_crop.shape[0]
+                        or template.shape[1] > slot_crop.shape[1]
+                    ):
+                        continue
+
+                    # Maskeli Eşleştirme Yap
+                    if mask is not None:
+                        res = cv2.matchTemplate(
+                            slot_crop, template, cv2.TM_CCOEFF_NORMED, mask=mask
+                        )
+                    else:
+                        res = cv2.matchTemplate(
+                            slot_crop, template, cv2.TM_CCOEFF_NORMED
+                        )
+
+                    _, max_val, _, _ = cv2.minMaxLoc(res)
+
+                    # Eşik değerini geçen en yüksek skoru kaydet
+                    if max_val > 0.75 and max_val > best_score:
+                        best_score = max_val
+                        found_item_name = name
+                except Exception:
+                    pass
+
+            results.append(found_item_name)
+
+        return results
+
     def extract_game_state(self, raw_bgr_image):
-        gray_image = cv2.cvtColor(raw_bgr_image, cv2.COLOR_BGR2GRAY)
         current_hp = self._get_current_hp(raw_bgr_image)
 
+        # Optimize edilmiş Level Up Kontrolü
         try:
             x, y, w, h = LEVELUP_REGION
-            levelup_search_area = gray_image[y : y + h, x : x + w]
-        except Exception:
-            levelup_search_area = gray_image
+            lvl_crop = raw_bgr_image[y : y + h, x : x + w]
+            lvl_gray = cv2.cvtColor(lvl_crop, cv2.COLOR_BGR2GRAY)
+        except:
+            lvl_gray = cv2.cvtColor(raw_bgr_image, cv2.COLOR_BGR2GRAY)
 
+        # Optimize edilmiş Game Over Kontrolü
         try:
             x, y, w, h = GAMEOVER_REGION
-            gameover_search_area = gray_image[y : y + h, x : x + w]
-        except Exception:
-            gameover_search_area = gray_image
+            go_crop = raw_bgr_image[y : y + h, x : x + w]
+            go_gray = cv2.cvtColor(go_crop, cv2.COLOR_BGR2GRAY)
+        except:
+            go_gray = cv2.cvtColor(raw_bgr_image, cv2.COLOR_BGR2GRAY)
 
-        is_level_up = self._check_template(levelup_search_area, self.levelup_template)
-        is_game_over = self._check_template(
-            gameover_search_area, self.gameover_template
-        )
-
-        game_state = {
+        return {
             "current_hp": current_hp,
-            "is_level_up": is_level_up,
-            "is_game_over": is_game_over,
+            "is_level_up": self._check_template(lvl_gray, self.levelup_template),
+            "is_game_over": self._check_template(go_gray, self.gameover_template),
         }
-
-        return game_state
