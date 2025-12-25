@@ -140,42 +140,31 @@ class InfoExtractor:
         except Exception:
             return -1.0
 
-    # --- YENİ: LEVEL UP EKRANINI TARA ---
     def scan_levelup_screen(self, raw_bgr_image):
-        """
-        Level Up ekranındaki 3 kutuyu tarar.
-        Dönüş Örneği: ['katana', None, 'xp_tome'] (None = Tanınmayan item)
-        """
         gray_screen = cv2.cvtColor(raw_bgr_image, cv2.COLOR_BGR2GRAY)
         results = []
 
-        # Her bir kutu için (Koordinatları LEVELUP_OPTIONS'dan al)
         for i, (x, y, w, h) in enumerate(LEVELUP_OPTIONS):
-            # Güvenlik: Resim sınırlarını aşma
             if y + h > gray_screen.shape[0] or x + w > gray_screen.shape[1]:
                 results.append(None)
                 continue
 
-            # Kutuyu Kes
             slot_crop = gray_screen[y : y + h, x : x + w]
 
             found_item_name = None
             best_score = 0.0
 
-            # Bu kutuda bildiğimiz itemlerden biri var mı?
             for name, data in self.item_templates.items():
                 template = data["img"]
                 mask = data["mask"]
 
                 try:
-                    # Şablon kutudan büyükse atla
                     if (
                         template.shape[0] > slot_crop.shape[0]
                         or template.shape[1] > slot_crop.shape[1]
                     ):
                         continue
 
-                    # Maskeli Eşleştirme Yap
                     if mask is not None:
                         res = cv2.matchTemplate(
                             slot_crop, template, cv2.TM_CCOEFF_NORMED, mask=mask
@@ -187,7 +176,6 @@ class InfoExtractor:
 
                     _, max_val, _, _ = cv2.minMaxLoc(res)
 
-                    # Eşik değerini geçen en yüksek skoru kaydet
                     if max_val > 0.75 and max_val > best_score:
                         best_score = max_val
                         found_item_name = name
@@ -201,7 +189,6 @@ class InfoExtractor:
     def extract_game_state(self, raw_bgr_image):
         current_hp = self._get_current_hp(raw_bgr_image)
 
-        # Optimize edilmiş Level Up Kontrolü
         try:
             x, y, w, h = LEVELUP_REGION
             lvl_crop = raw_bgr_image[y : y + h, x : x + w]
@@ -209,7 +196,6 @@ class InfoExtractor:
         except:
             lvl_gray = cv2.cvtColor(raw_bgr_image, cv2.COLOR_BGR2GRAY)
 
-        # Optimize edilmiş Game Over Kontrolü
         try:
             x, y, w, h = GAMEOVER_REGION
             go_crop = raw_bgr_image[y : y + h, x : x + w]

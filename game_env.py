@@ -1,4 +1,3 @@
-# game_env.py (HARİTA YOK - SADECE SAVAŞ VE LEVEL UP)
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
@@ -18,9 +17,8 @@ from config import (
 
 from get_infos import InfoExtractor
 
-# --- İTEM ÖNCELİK LİSTESİ ---
 PRIORITY_LIST = [
-    "katana",  # En iyi silah
+    "katana",
     "dexecutioner",
     "frostwalker",
     "chaos_tome",
@@ -28,7 +26,6 @@ PRIORITY_LIST = [
     "xp_tome",
     "cursed_tome",
 ]
-# ----------------------------
 
 
 class ScreenMonitor(threading.Thread):
@@ -155,7 +152,6 @@ class GameEnv(gym.Env):
         return False
 
     def _choose_best_levelup_action(self):
-        """Level Up ekranında en iyi seçeneği belirler."""
         raw_obs = self.monitor.latest_raw_obs
         if raw_obs is None:
             return 7
@@ -175,12 +171,9 @@ class GameEnv(gym.Env):
         return 7 + best_slot_index
 
     def step(self, action):
-        # --- HARİTA KODU KALDIRILDI ---
-
         self.last_game_state = self.monitor.latest_game_state
         is_level_up_visible = self.last_game_state.get("is_level_up", False)
 
-        # AKILLI LEVEL UP MANTIĞI
         if is_level_up_visible:
             forced_action = self._choose_best_levelup_action()
             action = forced_action
