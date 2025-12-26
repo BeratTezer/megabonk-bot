@@ -33,7 +33,6 @@ Bu repo, Megabonk oyunu için ekran görüntüsü + görüntü işleme ile durum
 - [x] Oyun ekranı üzerinden ROI (Region of Interest) tabanlı çalışma
 - [x] HP bar okuma için siyah–beyaz (BW) tabanlı algılama
 - [x] HP bar için offset ve left padding kalibrasyonu
-- [x] Görsel debug ve kalibrasyon aracı (`debug_hp_bw.py`)
 - [x] HP bar için sabit arama bölgesinin tanımlanması
 - [x] HP bar doluluk oranının görüntü işleme ile hesaplanması
 - [x] Renk uzayı dönüşümü (BGR → HSV) kullanımı
@@ -53,9 +52,12 @@ Bu repo, Megabonk oyunu için ekran görüntüsü + görüntü işleme ile durum
 - [x] HP bar için siyah–beyaz (grayscale + threshold) okuma yaklaşımının geliştirilmesi
 - [x] HP bar soldan bitişik olmama durumu için left padding çözümünün eklenmesi
 - [x] HP okuma parametrelerini canlı ayarlayabilen debug aracı (`debug_hp_bw.py`)
+- [x] Kalkan barı eklendiğinde, yani HP barı yer değiştirdiğinde yeni konumunda okunması
 - [x] Kalibrasyon parametrelerinin konfigürasyon mantığına bağlanması
 - [x] Algı katmanı için manuel kalibrasyon iş akışının oluşturulması
 - [x] Eşya seçimini istenen seçilecek  
+
+---
 
 ### 🟢 Üzerinde Aktif Olarak Çalışılanlar
 - [ ] Ajana harita okutma
@@ -67,6 +69,8 @@ Bu repo, Megabonk oyunu için ekran görüntüsü + görüntü işleme ile durum
 - [ ] Sandık toplama sağlanması
 - [ ] Akıllı eşya alım
 - [ ] Sevie 1'in tamamlanmasını sağlamak
+
+---
 
 ### 🟡 Kısa Vadeli (Özellik Ekleme/Geliştirme)
 - [ ] HP okuma fonksiyonunun tek ve merkezi hale getirilmesi

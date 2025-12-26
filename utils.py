@@ -3,7 +3,6 @@ from config import OYUN_PENCERE_ADI
 
 
 def get_game_window_region():
-    """Oyun penceresinin konumunu ve boyutunu bulur."""
     try:
         pencere = pyautogui.getWindowsWithTitle(OYUN_PENCERE_ADI)[0]
         if not pencere:

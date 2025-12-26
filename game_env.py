@@ -9,23 +9,9 @@ import datetime
 import threading
 
 from utils import get_game_window_region
-from config import (
-    ACTION_SPACE_SIZE,
-    ACTION_MAP,
-    OYUN_PENCERE_ADI,
-)
+from config import ACTION_SPACE_SIZE, ACTION_MAP, OYUN_PENCERE_ADI, PRIORITY_LIST
 
 from get_infos import InfoExtractor
-
-PRIORITY_LIST = [
-    "katana",
-    "dexecutioner",
-    "frostwalker",
-    "chaos_tome",
-    "precision_tome",
-    "xp_tome",
-    "cursed_tome",
-]
 
 
 class ScreenMonitor(threading.Thread):

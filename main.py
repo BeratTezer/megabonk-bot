@@ -8,7 +8,6 @@ from train import start_training
 
 
 def run_trained_model():
-    """Eğitilmiş PPO modelini çalıştırır."""
     print("Eğitilmiş model yükleniyor...")
     model_path = "models/ppo_final_model.zip"
     if not os.path.exists(model_path):

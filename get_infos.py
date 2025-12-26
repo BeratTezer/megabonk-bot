@@ -2,33 +2,22 @@ import cv2
 import numpy as np
 import os
 import glob
+from config import (
+    HP_SEARCH_REGION,
+    BLUE_COLOR_LOW,
+    BLUE_COLOR_HIGH,
+    HP_COLOR_LOW,
+    HP_COLOR_HIGH,
+    TEMPLATE_THRESHOLD,
+    STANDARD_OFFSET,
+    BLUE_SHIFT,
+    SLICE_HEIGHT,
+    LEVELUP_OPTIONS,
+    LEVELUP_REGION,
+    GAMEOVER_REGION,
+)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# --- SİZİN DÜZENLEMENİZ GEREKEN AYARLAR ---
-# 1. Sağlık Çubuğu Bölgesi
-HP_SEARCH_REGION = (27, 140, 331, 100)
-
-# 2. Renk Ayarları
-HP_COLOR_LOW = np.array([0, 50, 50])  # Kırmızı (Can)
-HP_COLOR_HIGH = np.array([10, 255, 255])
-
-BLUE_COLOR_LOW = np.array([100, 150, 50])  # Mavi (Mana/Kalkan)
-BLUE_COLOR_HIGH = np.array([140, 255, 255])
-
-# --- BÖLGESEL ARAMA AYARLARI ---
-LEVELUP_REGION = (823, 313, 373, 50)
-GAMEOVER_REGION = (1123, 176, 310, 94)
-
-# SİZİN BULDUĞUNUZ KOORDİNATLAR
-LEVELUP_OPTIONS = [
-    (885, 490, 140, 140),  # 1. Seçenek
-    (900, 720, 135, 130),  # 2. Seçenek
-    (900, 945, 135, 135),  # 3. Seçenek
-]
-
-# Şablon Eşleştirme Eşiği
-TEMPLATE_THRESHOLD = 0.6
 
 
 class InfoExtractor:
@@ -89,13 +78,6 @@ class InfoExtractor:
         try:
             x_s, y_s, w_s, h_s = HP_SEARCH_REGION
 
-            # --- KULLANICI AYARLARI ---
-            STANDARD_OFFSET = 1
-            BLUE_SHIFT = 37
-            SLICE_HEIGHT = 3
-            # --------------------------
-
-            # 1. ADIM: Standart konumu kontrol et (Mavi var mı?)
             check_y = y_s + STANDARD_OFFSET
 
             if check_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
@@ -109,14 +91,11 @@ class InfoExtractor:
             mask_blue = cv2.inRange(hsv_check, BLUE_COLOR_LOW, BLUE_COLOR_HIGH)
             blue_ratio = cv2.countNonZero(mask_blue) / (w_s * SLICE_HEIGHT)
 
-            # 2. ADIM: Ofseti Belirle
             current_offset = STANDARD_OFFSET
 
-            # Eğer şeridin %40'ından fazlası maviyse, bar kaymıştır.
             if blue_ratio > 0.40:
                 current_offset = STANDARD_OFFSET + BLUE_SHIFT
 
-            # 3. ADIM: Kırmızı Canı Oku
             read_y = y_s + current_offset
 
             if read_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
@@ -134,7 +113,6 @@ class InfoExtractor:
 
             hp_percentage = (white_pixels / total_area) * 100
 
-            # Gürültü filtresi
             return hp_percentage if hp_percentage > 2 else 0.0
 
         except Exception:
