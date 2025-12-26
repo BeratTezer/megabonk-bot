@@ -78,6 +78,7 @@ class InfoExtractor:
         try:
             x_s, y_s, w_s, h_s = HP_SEARCH_REGION
 
+            # 1. ADIM: Standart konumu kontrol et (Mavi var mı?)
             check_y = y_s + STANDARD_OFFSET
 
             if check_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
@@ -91,11 +92,14 @@ class InfoExtractor:
             mask_blue = cv2.inRange(hsv_check, BLUE_COLOR_LOW, BLUE_COLOR_HIGH)
             blue_ratio = cv2.countNonZero(mask_blue) / (w_s * SLICE_HEIGHT)
 
+            # 2. ADIM: Ofseti Belirle
             current_offset = STANDARD_OFFSET
 
+            # Eğer şeridin %40'ından fazlası maviyse, bar kaymıştır.
             if blue_ratio > 0.40:
                 current_offset = STANDARD_OFFSET + BLUE_SHIFT
 
+            # 3. ADIM: Kırmızı Canı Oku
             read_y = y_s + current_offset
 
             if read_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
@@ -113,6 +117,7 @@ class InfoExtractor:
 
             hp_percentage = (white_pixels / total_area) * 100
 
+            # Gürültü filtresi
             return hp_percentage if hp_percentage > 2 else 0.0
 
         except Exception:

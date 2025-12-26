@@ -9,7 +9,7 @@ import pyautogui  # Ekran boyutunu almak için
 from utils import get_game_window_region
 from get_infos import (
     InfoExtractor,
-    HP_BAR_REGION,
+    HP_SEARCH_REGION,
     LEVELUP_REGION,
     GAMEOVER_REGION,
 )
@@ -104,7 +104,7 @@ with mss.mss() as sct:
         )
 
         # HP Bölgesi (Sadece çizim)
-        x, y, w, h = HP_BAR_REGION
+        x, y, w, h = HP_SEARCH_REGION
         cv2.rectangle(img, (x, y), (x + w, y + h), color_box, 2)
 
         # 5. Görüntüyü küçült ve göster

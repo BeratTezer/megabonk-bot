@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: Vision-Based Reinforcement Learning Game Agent
+message: If you use this project in your research, please cite it as below.
+type: software
+authors:
+  - family-names: Tezer
+    given-names: Berat
+year: 2025
+license: MIT
+repository-code: https://github.com/BeratTezer/megabonk-bot
+keywords:
+  - reinforcement learning
+  - computer vision
+  - game agent
+  - screen-based agent
+  - classical image processing

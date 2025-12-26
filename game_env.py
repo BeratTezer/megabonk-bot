@@ -64,10 +64,10 @@ class GameEnv(gym.Env):
         self.monitor.start()
         time.sleep(1.0)
 
-        self.render_window_name = "AI Bot Log Penceresi"
+        self.render_window_name = "Log Penceresi"
         self.current_action_str = "NOP"
         self.last_hp = 100.0
-        self.current_level = 1
+        self.current_level = 0
         self.on_levelup_screen = False
 
         self.last_reward = 0.0
@@ -256,7 +256,7 @@ class GameEnv(gym.Env):
         except:
             pass
 
-        self.current_level = 1
+        self.current_level = 0
         self.last_game_state = self.monitor.latest_game_state
         self.last_hp = self.last_game_state.get("current_hp", 100.0)
 

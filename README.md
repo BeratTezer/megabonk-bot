@@ -24,7 +24,8 @@ Bu repo, Megabonk oyunu için ekran görüntüsü + görüntü işleme ile durum
 - [Assets Yapısı](#assets-yapısı)
 - [Sık Karşılaşılan Sorunlar](#sık-karşılaşılan-sorunlar)
 - [Geliştirme Notları](#geliştirme-notları)
-- [Lisans / Uyarı](#lisans--uyarı)
+- [Lisans](#lisans)
+- [Atıf](#atıf)
 ---
 ## Geliştirme Yol Haritası
 
@@ -524,7 +525,18 @@ Olası nedenler:
 
 ---
 
-## Lisans / Uyarı
+## Lisans
 
-Bu bot, oyunların kullanım şartlarına aykırı olabilir. Kendi sorumluluğunla kullan.
+Bu proje **MIT Lisansı** ile lisanslanmıştır.  
+Detaylar için [LICENSE](./LICENSE) dosyasına bakınız.
 
+---
+
+## Atıf
+
+Bu projeyi akademik çalışmalarda, araştırmalarda veya yayınlarda kullanırsanız lütfen atıf veriniz.
+
+- Makine okunabilir atıf bilgisi: [CITATION.cff](./CITATION.cff)
+- İnsan okunabilir atıf ve BibTeX: [CITATION.md](./CITATION.md)
+
+GitHub, `CITATION.cff` dosyasını kullanarak otomatik olarak **“Cite this repository”** seçeneğini sunar.
