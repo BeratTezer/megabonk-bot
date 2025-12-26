@@ -7,6 +7,7 @@ Bu repo, Megabonk oyunu için ekran görüntüsü + görüntü işleme ile durum
 
 ## İçindekiler
 
+- [Geliştirme Yol Haritası](#geliştirme-yol-haritası)
 - [Hızlı Başlangıç](#hızlı-başlangıç)
 - [Proje Mimarisi](#proje-mimarisi)
 - [Kurulum](#kurulum)
@@ -24,6 +25,90 @@ Bu repo, Megabonk oyunu için ekran görüntüsü + görüntü işleme ile durum
 - [Sık Karşılaşılan Sorunlar](#sık-karşılaşılan-sorunlar)
 - [Geliştirme Notları](#geliştirme-notları)
 - [Lisans / Uyarı](#lisans--uyarı)
+---
+## Geliştirme Yol Haritası
+
+### ✅ Şimdiye Kadar Yapılanlar
+- [x] Gerçek zamanlı ekran yakalama altyapısının kurulması
+- [x] Oyun ekranı üzerinden ROI (Region of Interest) tabanlı çalışma
+- [x] HP bar okuma için siyah–beyaz (BW) tabanlı algılama
+- [x] HP bar için offset ve left padding kalibrasyonu
+- [x] Görsel debug ve kalibrasyon aracı (`debug_hp_bw.py`)
+- [x] HP bar için sabit arama bölgesinin tanımlanması
+- [x] HP bar doluluk oranının görüntü işleme ile hesaplanması
+- [x] Renk uzayı dönüşümü (BGR → HSV) kullanımı
+- [x] Renk tabanlı maskeleme ile HP algılama
+- [x] Piksel oranına dayalı HP yüzdesi hesaplama
+- [x] HP bar için dikey offset (standard offset) mantığının eklenmesi
+- [x] HP bar rengi değişimine karşı (kırmızı/mavi) sezgisel shift mekanizması
+- [x] Heuristic threshold değerleri ile karar verme
+- [x] Görüntü işleme ile çıkarılan bilgilerin sayısallaştırılması
+- [x] Algı (perception) ve karar (agent) katmanlarının ayrılması
+- [x] Reinforcement learning ajan altyapısının kurulması
+- [x] State–action–reward döngüsünün uygulanması
+- [x] Görüntüden elde edilen HP bilgisinin state vektörüne dahil edilmesi
+- [x] Kural tabanlı algı + öğrenen ajan mimarisinin oluşturulması
+- [x] Eğitim (train) ve çalışma (run) akışının ayrılması
+- [x] Görsel debug amaçlı yardımcı araçların yazılması
+- [x] HP bar için siyah–beyaz (grayscale + threshold) okuma yaklaşımının geliştirilmesi
+- [x] HP bar soldan bitişik olmama durumu için left padding çözümünün eklenmesi
+- [x] HP okuma parametrelerini canlı ayarlayabilen debug aracı (`debug_hp_bw.py`)
+- [x] Kalibrasyon parametrelerinin konfigürasyon mantığına bağlanması
+- [x] Algı katmanı için manuel kalibrasyon iş akışının oluşturulması
+- [x] Eşya seçimini istenen seçilecek  
+
+### 🟢 Üzerinde Aktif Olarak Çalışılanlar
+- [ ] Ajana harita okutma
+- [ ] Harita üzerinden rota çıkarımı
+- [ ] Shrine toplama ve seçim eklenmesi
+- [ ] Çanak kırma özelliği eklenmesi
+- [ ] Eşya toplama sağlanması
+- [ ] Akıllı shrine seçim eklenmesi
+- [ ] Sandık toplama sağlanması
+- [ ] Akıllı eşya alım
+- [ ] Sevie 1'in tamamlanmasını sağlamak
+
+### 🟡 Kısa Vadeli (Özellik Ekleme/Geliştirme)
+- [ ] HP okuma fonksiyonunun tek ve merkezi hale getirilmesi
+- [ ] Algı katmanı için hata toleransı ve edge-case temizliği
+- [ ] Kalibrasyon gerektiğinde kullanıcıya bildirilmesi
+- [ ] Sevie 2'nin tamamlanmasını sağlamak
+- [ ] Sevie 3'ün tamamlanmasını sağlamak
+
+---
+
+### 🔵 Orta Vadeli (Dayanıklılık ve Performans)
+- [ ] Çözünürlük ve UI scale otomasyon tool geliştirmek
+- [ ] Çözünürlük ve UI scale değişimlerine otomatik uyum
+- [ ] Görüntü işleme parametreleri için otomatik kalibrasyon
+- [ ] State vektörünün sadeleştirilmesi ve normalize edilmesi
+- [ ] Eğitim sırasında algı hatalarını loglayan analiz modülü
+- [ ] Gerektiğinde otomatik kalibrasyon çalıştırılması
+
+
+---
+
+### 🟣 Uzun Vadeli (Akıllı Ajan Gelişimi)
+- [ ] Daha zengin reward fonksiyonu (risk/ödül dengesi)
+- [ ] Farklı ajan mimarilerinin karşılaştırılması/test edilmesi
+- [ ] Eğitim ve inference ayrımı (train vs deploy modları)
+- [ ] Ajan davranışlarını görselleştiren replay/debug sistemi
+
+---
+
+### 🔴 Opsiyonel / Deneysel
+- [ ] Basit CNN ile yalnızca HP bar için yardımcı algı
+- [ ] Çoklu oyun/harita desteği
+- [ ] İnsan oynanışından veri toplayarak öğrenme sağlama
+
+---
+
+### ❓ Dokümantasyon ve Kullanılabilirlik
+- [ ] Kurulum ve kalibrasyon rehberi
+- [ ] Görsel örneklerle algı hattı açıklaması
+- [ ] Agent–Environment–Perception mimari diyagramı
+- [ ] Tanıtım videosu çekilerek Youtube'a yüklenmesi
+- [ ] Sık karşılaşılan hatalar ve çözümleri
 
 ---
 
