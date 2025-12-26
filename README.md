@@ -275,11 +275,6 @@ Neye bakılır:
 - Skorlar eşik üstüne çıkıyor mu?
 - Kutular doğru UI öğelerini kapsıyor mu?
 
-SS/GIF ekle:
-
-- `docs/screenshots/debug_live_regions.png` veya kısa GIF  
-  - (Buraya görsel ekle)
-
 ---
 
 ### 3) Şablon Bölge Fine Tune (Otomatik tespit)
@@ -311,11 +306,6 @@ Akış:
 >> LEVELUP_REGION = (x, y, w, h)  [Skor: 0.9xx]
 ```
 
-SS ekle:
-
-- `docs/screenshots/fine_tune_regions.png`  
-  - (Buraya görsel ekle)
-
 ---
 
 ### 4) Level Up Seçenek Slot Ayarı
@@ -340,11 +330,6 @@ Kontroller:
 ```bash
 python find_levelup_slots.py
 ```
-
-SS ekle:
-
-- `docs/screenshots/find_levelup_slots.png`  
-  - (Buraya görsel ekle)
 
 ---
 
@@ -381,11 +366,6 @@ python calibrate_hp_v3.py
 Bu değerleri nereye yazacağım?
 
 - `get_infos.py` içindeki HP okuma parametreleri (ör. `STANDARD_OFFSET`, `BLUE_SHIFT`, `SLICE_HEIGHT`) mantıksal olarak burada kalibre ediliyor. Kendi projende tek kaynağa bağlamak için bu değerleri config’e alıp `InfoExtractor._get_current_hp()` içinde kullanmak iyi olur.
-
-SS ekle:
-
-- `docs/screenshots/hp_calibration.png`  
-  - (Buraya görsel ekle)
 
 ---
 
