@@ -275,6 +275,7 @@ Neye bakılır:
 - Skorlar eşik üstüne çıkıyor mu?
 - Kutular doğru UI öğelerini kapsıyor mu?
 
+![example_screenshot](docs/screenshots/debug_live_regions.png)
 ---
 
 ### 3) Şablon Bölge Fine Tune (Otomatik tespit)
@@ -306,6 +307,7 @@ Akış:
 >> LEVELUP_REGION = (x, y, w, h)  [Skor: 0.9xx]
 ```
 
+![example_screenshot](docs/screenshots/fine_tune_regions.png)
 ---
 
 ### 4) Level Up Seçenek Slot Ayarı
@@ -331,11 +333,14 @@ Kontroller:
 python find_levelup_slots.py
 ```
 
+![example_screenshot](docs/screenshots/find_levelup_slots-terminal_in.png)
+![example_screenshot](docs/screenshots/find_levelup_slots.png)
+![example_screenshot](docs/screenshots/find_levelup_slots-terminal_out.png)
 ---
 
 ### 5) HP Bar Kalibrasyon Modu
 
-**Dosya:** `calibrate_hp_v3.py` (repo içinde bu içerikte)
+**Dosya:** `debug_hp_bw.py`
 
 Ne yapar:
 
@@ -354,7 +359,7 @@ Kontroller:
 Çalıştırma:
 
 ```bash
-python calibrate_hp_v3.py
+python debug_hp_bw.py
 ```
 
 Çıkış örneği:
@@ -363,9 +368,12 @@ python calibrate_hp_v3.py
 >>> KAYDEDİLECEK DEĞERLER: OFFSET=..., SHIFT=...
 ```
 
+![example_screenshot](docs/screenshots/hp_debug_bw.png)
+![example_screenshot](docs/screenshots/hp_debug_bw-terminal.png)
+
 Bu değerleri nereye yazacağım?
 
-- `get_infos.py` içindeki HP okuma parametreleri (ör. `STANDARD_OFFSET`, `BLUE_SHIFT`, `SLICE_HEIGHT`) mantıksal olarak burada kalibre ediliyor. Kendi projende tek kaynağa bağlamak için bu değerleri config’e alıp `InfoExtractor._get_current_hp()` içinde kullanmak iyi olur.
+- `get_infos.py` içindeki HP okuma parametreleri (ör. `STANDARD_OFFSET`, `BLUE_SHIFT`, `SLICE_HEIGHT`) mantıksal olarak burada kalibre ediliyor. Kendi projende tek kaynağa bağlamak için bu değerleri config içinde kullanılır.
 
 ---
 
@@ -407,7 +415,7 @@ ACTION_MAP = {
 ACTION_SPACE_SIZE = len(ACTION_MAP)
 ```
 
-> Not: Kendi oyunun inputlarına göre `ACTION_MAP`’i düzenlemelisin.
+> Not: Kayıtlı tuşlarınız farklıysa kendi oyun inputlarınıza göre `ACTION_MAP`’i düzenlemelisiniz
 
 ---
 
@@ -421,10 +429,6 @@ ACTION_SPACE_SIZE = len(ACTION_MAP)
 - `assets/good_items/*.png` (item ikon şablonları)
 
 Item şablonlarında alpha kanal varsa maske olarak kullanılır; yoksa düz template matching yapılır.
-
-Öneri:
-
-- Aynı item’in farklı UI durumları varsa (parlaklık, hover, farklı çözünürlük), ayrı png’ler ekleyip isimlendirmeyi standardize et.
 
 ---
 
