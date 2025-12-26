@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import os
-import glob  # <-- Klasör taramak için eklendi
+import glob
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
