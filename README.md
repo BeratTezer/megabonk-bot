@@ -2,7 +2,6 @@
 
 Bu repo, Megabonk oyunu için ekran görüntüsü + görüntü işleme ile durum okuyup, `gymnasium` ortamı üzerinden `stable-baselines3 PPO` ajanı eğitebilen ve çalıştırabilen bir bottur. En güçlü tarafı, **kapsamlı debug/kalibrasyon araçları** ile farklı çözünürlük, UI ölçeği ve pencere konumlarında hızlı ayar yapılabilmesidir.
 
-> Not: Bu README özellikle “debug tool’lara ekran görüntüsü (SS) ekleyebileceğin” şekilde şablonlu yazıldı. İlgili yerlere görsel ekleyebilmen için hazır başlıklar ve yer tutucular var.
 
 ---
 
