@@ -203,6 +203,9 @@ Eğitim akışı `train.py` üzerinden `start_training()` fonksiyonuyla başlar.
 
 Çalıştırmak için menüde **1** seç.
 
+![example_screenshot](docs/screenshots/mod1.png)
+---
+
 ### Mod 2: Eğitilmiş ajanı çalıştırma
 
 Eğitilmiş model varsa `models/ppo_final_model.zip` yüklenir ve ajan sürekli oyun oynar.  
@@ -210,6 +213,7 @@ Durdurmak için `CTRL+C`.
 
 Çalıştırmak için menüde **2** seç.
 
+![example_screenshot](docs/screenshots/mod2.png)
 ---
 
 ## Debug ve Kalibrasyon Araçları
@@ -241,16 +245,7 @@ Beklenen çıktı:
 - Terminalde okunan değerleri yazdırır
 - Bir OpenCV penceresinde region kutuları çizilmiş ekranı gösterir
 
-SS ekle:
-
-- `docs/screenshots/debug_regions_overlay.png`  
-  - Örnek açıklama: “HP/LevelUp/GameOver bölgeleri doğru yerde mi?”  
-  - (Buraya görsel ekle)
-
-```md
-![debug_regions overlay](docs/screenshots/debug_regions_overlay.png)
-```
-
+![example_screenshot](docs/screenshots/debug_regions.png)
 ---
 
 ### 2) Canlı Bölge Debug (Live overlay)

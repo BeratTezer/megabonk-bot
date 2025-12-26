@@ -13,7 +13,6 @@ from get_infos import (
     HP_SEARCH_REGION,
     LEVELUP_REGION,
     GAMEOVER_REGION,
-    MAP_REGION,
 )
 
 # ---
