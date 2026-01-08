@@ -50,9 +50,9 @@ ACTION_MAP = {
     4: ("key", "space"),  # Hareket: Space
     5: ("key", "ctrl"),  # Hareket: Ctrl
     6: ("key", "e"),  # Etkileşim / Seçim
-    7: ("Key", "1"),  # Seçenek 1
-    8: ("Key", "2"),  # Seçenek 2
-    9: ("Key", "3"),  # Seçenek 3
+    7: ("key", "1"),  # Seçenek 1
+    8: ("key", "2"),  # Seçenek 2
+    9: ("key", "3"),  # Seçenek 3
     10: (
         "sequence",
         ["down", "down", "down", "enter"],

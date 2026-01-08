@@ -21,32 +21,32 @@ class RenderCallback(BaseCallback):
 
 
 def start_training():
-    print("Eğitim Modu Başlatılıyor... (VEKTOR tabanlı - MlpPolicy)")
+    # print("Eğitim Modu Başlatılıyor... (VEKTOR tabanlı - MlpPolicy)")
 
     MODEL_PATH = "models/ppo_final_model.zip"
 
     env = DummyVecEnv([lambda: GameEnv()])
 
     if os.path.exists(MODEL_PATH):
-        print(f"Varolan model şuradan yükleniyor: {MODEL_PATH}")
+        # print(f"Model şuradan yükleniyor: {MODEL_PATH}")
         model = PPO.load(
             MODEL_PATH, env=env, device="cuda" if torch.cuda.is_available() else "cpu"
         )
-        model.tensorboard_log = "./ppo_tensorboard_logs/"
+        model.tensorboard_log = "models/ppo_tensorboard_logs/"
     else:
-        print("Yeni model oluşturuluyor...")
+        # print("Yeni model oluşturuluyor...")
         model = PPO(
             "MlpPolicy",
             env,
             verbose=1,
-            tensorboard_log="./ppo_tensorboard_logs/",
+            tensorboard_log="models/ppo_tensorboard_logs/",
             device="cuda" if torch.cuda.is_available() else "cpu",
         )
 
     render_callback = RenderCallback(render_freq=5)
 
-    print("Eğitim başlıyor...")
-    print("Eğitimi durdurmak için CTRL+C tuşlarına basın.")
+    # print("Eğitim başlıyor...")
+    # print("Durdurmak için CTRL+C")
 
     try:
         model.learn(
@@ -56,8 +56,9 @@ def start_training():
         )
 
     except KeyboardInterrupt:
-        print("Eğitim durduruldu. İlerleme kaydediliyor...")
+        # print("Eğitim durduruldu. İlerleme kaydediliyor...")
+        pass
 
     model.save(MODEL_PATH)
-    print(f"Eğitim tamamlandı. Model şuraya kaydedildi: {MODEL_PATH}")
+    # print(f"Eğitim tamamlandı. Model şuraya kaydedildi: {MODEL_PATH}")
     env.close()

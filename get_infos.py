@@ -22,39 +22,33 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class InfoExtractor:
     def __init__(self):
-        # 1. Normal Şablonları Yükle
         levelup_path = os.path.join(SCRIPT_DIR, "assets/levelup_template.png")
         gameover_path = os.path.join(SCRIPT_DIR, "assets/gameover_template.png")
 
         self.levelup_template = self._load_template(levelup_path)
         self.gameover_template = self._load_template(gameover_path)
 
-        # 2. İTEM ŞABLONLARINI YÜKLE (Maskeli Yükleme)
         self.item_templates = {}
         items_dir = os.path.join(SCRIPT_DIR, "assets/good_items")
 
-        # Klasördeki tüm PNG'leri bul
         for file_path in glob.glob(os.path.join(items_dir, "*.png")):
             filename = os.path.basename(file_path)
-            item_name = os.path.splitext(filename)[0]  # "katana.png" -> "katana"
+            item_name = os.path.splitext(filename)[0]
 
-            # Şeffaflık (Alpha) kanalıyla birlikte yükle
             img_bgra = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
 
             if img_bgra is not None:
-                # Eğer resim 4 kanallıysa (Şeffaflık varsa) maske oluştur
                 if img_bgra.shape[2] == 4:
                     bgr = img_bgra[:, :, :3]
-                    mask = img_bgra[:, :, 3]  # Alpha kanalı
+                    mask = img_bgra[:, :, 3]
                     gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
 
                     self.item_templates[item_name] = {"img": gray, "mask": mask}
-                    print(f"İtem Yüklendi (Maskeli): {item_name}")
+                    # print(f"İtem Yüklendi (Maskeli): {item_name}")
                 else:
-                    # Maske yoksa düz yükle
                     gray = cv2.cvtColor(img_bgra, cv2.COLOR_BGR2GRAY)
                     self.item_templates[item_name] = {"img": gray, "mask": None}
-                    print(f"İtem Yüklendi (Normal): {item_name}")
+                    # print(f"İtem Yüklendi (Normal): {item_name}")
             else:
                 print(f"UYARI: {filename} okunamadı!")
 
@@ -78,7 +72,6 @@ class InfoExtractor:
         try:
             x_s, y_s, w_s, h_s = HP_SEARCH_REGION
 
-            # 1. ADIM: Standart konumu kontrol et (Mavi var mı?)
             check_y = y_s + STANDARD_OFFSET
 
             if check_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
@@ -92,14 +85,11 @@ class InfoExtractor:
             mask_blue = cv2.inRange(hsv_check, BLUE_COLOR_LOW, BLUE_COLOR_HIGH)
             blue_ratio = cv2.countNonZero(mask_blue) / (w_s * SLICE_HEIGHT)
 
-            # 2. ADIM: Ofseti Belirle
             current_offset = STANDARD_OFFSET
 
-            # Eğer şeridin %40'ından fazlası maviyse, bar kaymıştır.
             if blue_ratio > 0.40:
                 current_offset = STANDARD_OFFSET + BLUE_SHIFT
 
-            # 3. ADIM: Kırmızı Canı Oku
             read_y = y_s + current_offset
 
             if read_y + SLICE_HEIGHT > raw_bgr_image.shape[0]:
@@ -117,7 +107,6 @@ class InfoExtractor:
 
             hp_percentage = (white_pixels / total_area) * 100
 
-            # Gürültü filtresi
             return hp_percentage if hp_percentage > 2 else 0.0
 
         except Exception:

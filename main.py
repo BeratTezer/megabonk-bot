@@ -47,7 +47,7 @@ def main_menu():
         choice = input("Seçiminiz (1-3): ")
 
         if choice == "1":
-            print("Mod 1 (Eğitim) başlatılıyor... Eğitim uzun sürebilir.")
+            # print("Mod 1 (Eğitim) başlatılıyor... Eğitim uzun sürebilir.")
             try:
                 start_training()
             except KeyboardInterrupt:
@@ -56,7 +56,7 @@ def main_menu():
                 print(f"Mod 1 hatası: {e}")
 
         elif choice == "2":
-            print("Mod 2 (Çalıştırma) başlatılıyor...")
+            # print("Mod 2 (Çalıştırma) başlatılıyor...")
             run_trained_model()
 
         elif choice == "3":

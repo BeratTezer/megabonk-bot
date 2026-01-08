@@ -156,6 +156,7 @@ class GameEnv(gym.Env):
 
         return 7 + best_slot_index
 
+    # döngü
     def step(self, action):
         self.last_game_state = self.monitor.latest_game_state
         is_level_up_visible = self.last_game_state.get("is_level_up", False)
@@ -215,6 +216,16 @@ class GameEnv(gym.Env):
                     pass
             else:
                 self._release_all_movement_keys()
+
+                if not is_level_up_visible:
+                    return (
+                        self._create_observation_vector(),
+                        -5,
+                        False,
+                        False,
+                        {},
+                    )
+
                 if command_type == "key":
                     try:
                         pyautogui.press(command_value)
@@ -227,6 +238,28 @@ class GameEnv(gym.Env):
                             time.sleep(0.05)
                     except:
                         pass
+
+        # if is_game_active:
+        #     if action in movement_actions:
+        #         try:
+        #             pyautogui.keyDown(command_value)
+        #             self.pressed_movement_keys.add(command_value)
+        #         except:
+        #             pass
+        #     else:
+        #         self._release_all_movement_keys()
+        #         if command_type == "key":
+        #             try:
+        #                 pyautogui.press(command_value)
+        #             except:
+        #                 pass
+        #         elif command_type == "sequence":
+        #             try:
+        #                 for key in command_value:
+        #                     pyautogui.press(key)
+        #                     time.sleep(0.05)
+        #             except:
+        #                 pass
 
         was_interrupted = self._wait_and_check(0.1)
         if was_interrupted:
@@ -276,7 +309,7 @@ class GameEnv(gym.Env):
             f"ZAMAN: {now}",
             f"EYLEM: {self.current_action_str}",
             f"ODUL: {self.last_reward:.1f}",
-            f"HP: {self.last_hp:.1f}% | LVL: {self.current_level}",
+            f"LVL: {self.current_level} | HP: {self.last_hp:.1f}%",
             f"LVL: {self.last_game_state.get('is_level_up', False)}",
             f"OYUN: {self.last_game_state.get('is_game_over', False)}",
         ]

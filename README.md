@@ -197,7 +197,7 @@ Eğitim akışı `train.py` üzerinden `start_training()` fonksiyonuyla başlar.
 
 - Model yolu: `models/ppo_final_model.zip`
 - `PPO("MlpPolicy", ...)`
-- Tensorboard log: `./ppo_tensorboard_logs/`
+- Tensorboard log: `models/ppo_tensorboard_logs/`
 - Toplam adım: `1_000_000`
 - Render callback: her 5 step’te env render penceresi güncellenir
 
